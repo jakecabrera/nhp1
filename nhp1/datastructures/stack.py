@@ -7,8 +7,9 @@ class Stack():
 
   # Add an object to the stack
   def add(self, obj):
-    obj.below = self.top
-    self.top = obj
+    node = StackNode(obj)
+    node.below = self.top
+    self.top = node
 
   # Pop the top of the stack off and return it
   def pop(self):
@@ -18,9 +19,10 @@ class Stack():
     self.top = self.top.below
     return result
 
+
 # a node for each element in the stack
 class StackNode():
   # constructor for the StackNode class
-  def __init__(self):
-    self.value = None
+  def __init__(self, value):
+    self.value = value
     self.below = None
