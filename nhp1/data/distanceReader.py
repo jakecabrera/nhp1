@@ -25,8 +25,8 @@ class DistanceReader():
       self.addresses.append(Address(record[0])) # Loads the address as an Address object
       del record[0]
       for j, dist in enumerate(record):
-        if dist != '':
-          # TODO: figure why this doesn't work
+        if dist != '' and dist != '\n':
+          # TODO: figure why this creates the same record
           print(dist)
           dist = dist.replace('\n', '')
           print(dist)
