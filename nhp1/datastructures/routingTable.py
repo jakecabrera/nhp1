@@ -4,7 +4,7 @@ class RoutingTable():
   def __init__(self):
     self.destinations = []
     self.distance_matrix = []
-
+    
   # lookup the distance between two addresses
   def distance_between(self, a, b):
     if len(self.distance_matrix) == 0: return 0.0

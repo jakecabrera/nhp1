@@ -1,5 +1,6 @@
 from nhp1.datastructures.routingTable import RoutingTable
 from nhp1.datastructures.stack import Stack
+from nhp1.datastructures.hashTable import ChainingHashTable
 
 # Class to control which trucks get what packages and what routes to take
 class Dispatch():
@@ -7,6 +8,7 @@ class Dispatch():
   def __init__(self):
     self.trucks = []
     self.routing_table = RoutingTable()
+    self.sorted_routes = ChainingHashTable()
     self.packages = []
     self.undelivered_packages = Stack()
 
