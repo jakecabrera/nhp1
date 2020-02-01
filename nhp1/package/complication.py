@@ -30,7 +30,7 @@ class Complication():
       hour = int(delay.split(':')[0])
       if delay.upper().endswith('PM'): hour += 12
       delay = delay[:-2]
-      minute = delay.split(':')[1]
+      minute = int(delay.split(':')[1])
       self.delay = datetime.now().replace(hour=hour, minute=minute, second=0)
     # for the wrong address listed case
     elif data.startswith('Wrong address listed'):

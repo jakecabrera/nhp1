@@ -22,7 +22,8 @@ class Address():
 
     # Extract the address and zip and set the appropriate values
     for match in Address.address_pattern.findall(data):
-      self.address = match.strip()
+      # Also fix inconsistencies with address naming
+      self.address = match.strip().replace('South', 'S').replace('East', 'E').replace('West', 'W').replace('North', 'N')
     for match in Address.zip_pattern.findall(data):
       self.zip = int(match)
 

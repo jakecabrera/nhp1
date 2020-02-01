@@ -13,6 +13,7 @@ class PackageReader():
   def load(self):
     with open(self.csv, 'r') as file:
       for line in file:
+        line = line.replace('\n', '').split(';')
         package = Deliverable()
         package.id = line[0] # get the package id
         package.address = Address(line[1] + ' (' + line[4] + ')') # Create an Address object

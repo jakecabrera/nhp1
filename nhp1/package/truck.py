@@ -14,7 +14,7 @@ class Truck():
     self.route = None
     self.dist_from_dest = float('inf')
     self.gas = float('inf')
-    self.deliverables = Set()
+    self.deliverables = []
     self.MAX_DELIVERABLES = 16
 
   # travels towards the destination or reaches the destination
