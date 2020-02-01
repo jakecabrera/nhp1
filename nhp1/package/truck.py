@@ -4,39 +4,69 @@ from nhp1.controller import Controller
 
 class Truck():
   # Constructor for the Truck class
-  def __init__(self, context: Controller, id: int):
+  def __init__(self, context: Controller,dispatch, id: int, status='at hub'):
     self.context = context
     self.id = id
     self.mileage = 0.0
     self.SPEED = 18.0
-    self.status = 'at hub'
+    self.status = status
     self.dest = None
-    self.route = None
+    self.route = []
     self.dist_from_dest = float('inf')
     self.gas = float('inf')
     self.deliverables = []
     self.MAX_DELIVERABLES = 16
+    self.dispatch = dispatch
 
   # travels towards the destination or reaches the destination
   def travel(self):
+    # Do nothing if we haven't been assigned yet
+    if self.status == 'awaiting assignment': return
+
+    # if we don't have a destination yet, set one
+    if self.dest is None:
+      if len(self.dispatch.packages) == 0: return # Don't worry if there's nothing else for us
+      if len(self.deliverables) == 0: self.dispatch.dispatch()
+      if len(self.deliverables) == 0: return # if we still have nothing after dispatch, there is nothing for us
+      self.dest = self.deliverables[0].address
+      self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(self.dest)
+
     # Travel towards destination at avg speed
-    self.dist_from_dest -= self.SPEED * self.context.time_delta / 3600
+    if self.dist_from_dest > 0.0:
+      dist_covered = self.SPEED * self.context.time_delta / 3600
+      self.dist_from_dest -= dist_covered
+      self.mileage += dist_covered
 
     # if at destination, deliver deliverables
     if self.dist_from_dest <= 0.0:
-      self.status = 'at destination'
-      self.deliver()
+      if self.dest == self.dispatch.home:
+        self.status = 'at hub'
+        self.dispatch.dispatch()
+      else:
+        self.status = 'at destination'
+      delivered_packages = self.deliver()
+      for package in delivered_packages:
+        self.deliverables.remove(package)
 
       # because deliveries are instant, any extra distance traveled over
       # are applied to the next destination
       overage = self.dist_from_dest * -1
 
       # set the new destination
-      self.dest = self.route.pop()
-      if self.dest is None:
-        pass  # TODO: assign a new route
-
-      # TODO: assign new destination
+      current_location = self.dest
+      if len(self.deliverables) > 0:
+        self.dest = self.deliverables[0].address
+        self.dist_from_dest = self.dispatch.routing_table.distance_between(current_location, self.dest)
+      else:
+        # If we are already home (because we delivered everything and there is nothing left to deliver)
+        if current_location == self.dispatch.home:
+          self.dest = None
+          self.dist_from_dest = 0.0
+          self.mileage -= overage
+          return
+        # we aren't at home, but lets go there right now
+        self.dest = self.dispatch.home
+        self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(self.dest)
       self.dist_from_dest -= overage
 
   # load a deliverable onto the truck
@@ -46,16 +76,17 @@ class Truck():
       if len(self.deliverables) == self.MAX_DELIVERABLES:
         return False
       deliverable.status = 'in route'
-      self.deliverables.add(deliverable)
+      self.deliverables.append(deliverable)
     return True
 
   # deliver any deliverables to the destination
   def deliver(self):
-    delivered_packages = Set()
+    delivered_packages = []
     for deliverable in self.deliverables:
       if deliverable.address == self.dest:
-        deliverable.status = 'delivered @ %s' % self.context.now.strftime("%X")
-        delivered_packages.add(deliverable)
+        deliverable.status = 'delivered by truck {} @ {} to {}'.format(self.id, self.context.now.strftime("%X"), deliverable.address)
+        delivered_packages.append(deliverable)
+    return delivered_packages
 
   # Override the hash function for use in the hash table
   def __hash__(self):

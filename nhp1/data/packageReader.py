@@ -15,7 +15,7 @@ class PackageReader():
       for line in file:
         line = line.replace('\n', '').split(';')
         package = Deliverable()
-        package.id = line[0] # get the package id
+        package.id = int(line[0]) # get the package id
         package.address = Address(line[1] + ' (' + line[4] + ')') # Create an Address object
         package.set_deadline(line[5].strip()) # Parse the deadline
         package.mass = int(line[6]) # Sets the mass of the package

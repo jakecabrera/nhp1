@@ -10,7 +10,13 @@ from nhp1.package.truck import Truck
 
 print('Hello World')
 controller = Controller()
-d = Dispatch(controller)
-d.sort_packages()
-d.trucks = [Truck(controller, 1), Truck(controller, 2)]
-d.load_trucks()
+controller.dispatch = Dispatch(controller)
+d = controller.dispatch
+d.trucks = [Truck(controller, d, 1), Truck(controller, d, 2, status='awaiting assignment')]
+d.dispatch()
+end_time = datetime.now().replace(hour=17,minute=0,second=0, microsecond=0)
+while controller.now < end_time:
+  controller.advance()
+total_miles = sum(x.mileage for x in d.trucks)
+print(total_miles)
+

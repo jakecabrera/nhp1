@@ -31,8 +31,8 @@ class Complication():
       if delay.upper().endswith('PM'): hour += 12
       delay = delay[:-2]
       minute = int(delay.split(':')[1])
-      self.delay = datetime.now().replace(hour=hour, minute=minute, second=0)
+      self.delay = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0)
     # for the wrong address listed case
     elif data.startswith('Wrong address listed'):
-      self.delay = datetime.now().replace(hour=10, minute=20, second=0)  # 10:20am
+      self.delay = datetime.now().replace(hour=10, minute=20, second=0, microsecond=0)  # 10:20am
       self.correction = Address('410 S State St (84111)')
