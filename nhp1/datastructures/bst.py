@@ -5,7 +5,7 @@ class BSTNode:
     self.right = right
     self.parent = parent
 
-  def count(self):
+  def count(self): # O(n)
     leftCount = 0
     rightCount = 0
     if self.left is not None:
@@ -14,7 +14,7 @@ class BSTNode:
       rightCount = self.right.count()
     return 1 + leftCount + rightCount
 
-  def get_successor(self):
+  def get_successor(self): # avg O(logn) worst O(n)
     # Successor resides in right subtree, if present
     if self.right is not None:
       successor = self.right
@@ -29,7 +29,8 @@ class BSTNode:
       node = node.parent
     return node.parent
 
-  def replace_child(self, current_child, new_child):
+  # Replace the specified child of a node with a new child
+  def replace_child(self, current_child, new_child): # O(1)
     if current_child is self.left:
       self.left = new_child
       if self.left:
@@ -40,19 +41,11 @@ class BSTNode:
         self.right.parent = self
 
 
+# Iterator used to iterate over a BST
 class BSTIterator:
   def __init__(self, node):
     self.node = node
 
-  # For Python versions >= 3
+  # Iterator method to access next element
   def __next__(self):
     return self.next()
-
-  # For Python versions < 3
-  def next(self):
-    if self.node is None:
-      raise StopIteration
-    else:
-      current = self.node.data
-      self.node = self.node.get_successor()
-      return current

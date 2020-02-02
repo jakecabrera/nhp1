@@ -29,6 +29,6 @@ class Controller():
     # Print out the state of all of the packages at specified times
     if time_in_seconds in self.snapshot_times:
       print('Snapshot at {} seconds'.format(time_in_seconds))
-      for package in self.dispatch.all_packages: # O(len(self.dispatch.all_packages))
+      for package in self.dispatch.all_packages: # O(packages)
         print(package)
 

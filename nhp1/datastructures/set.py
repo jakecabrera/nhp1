@@ -1,7 +1,9 @@
 from nhp1.datastructures.bst import BSTIterator, BSTNode
 
 
+# like a list but only unique entries
 class Set:
+  # constructor of the Set class
   def __init__(self, get_key_function=None):
     self.storage_root = None
     if get_key_function is None:
@@ -10,7 +12,8 @@ class Set:
     else:
       self.get_key = get_key_function
 
-  def __iter__(self):
+  # so that you can use Set in a for loop
+  def __iter__(self): # avg O(logn) worst O(n)
     if self.storage_root is None:
       return BSTIterator(None)
     minNode = self.storage_root
@@ -18,7 +21,9 @@ class Set:
       minNode = minNode.left
     return BSTIterator(minNode)
 
-  def add(self, new_element):
+  # add an element to the set. If it already exists, don't do anything
+  # return whether an element was added or not
+  def add(self, new_element): # avg O(logn) worst O(n)
     new_elementKey = self.get_key(new_element)
     if self.node_search(new_elementKey) is not None:
       return False
@@ -46,40 +51,46 @@ class Set:
             newNode.parent = node
             return True
 
-  def difference(self, other_set):
+  # Remove any elements in other_set from self
+  def difference(self, other_set): # O(n)
     result = Set(self.get_key)
     for element in self:
       if other_set.search(self.get_key(element)) is None:
         result.add(element)
     return result
 
-  def filter(self, predicate):
+  # remove any elements that don't return true when predicate is used on it
+  def filter(self, predicate): # O(n)
     result = Set(self.get_key)
     for element in self:
       if predicate(element):
         result.add(element)
     return result
 
-  def intersection(self, other_set):
+  # return only elements found in both lists
+  def intersection(self, other_set): # O(n^2)
     result = Set(self.get_key)
     for element in self:
       if other_set.search(self.get_key(element)) is not None:
         result.add(element)
     return result
 
-  def __len__(self):
+  # makes it so you can use len() on this class
+  def __len__(self): # O(1)
     if self.storage_root is None:
       return 0
     return self.storage_root.count()
 
-  def map(self, map_function):
+  # applies map_function to every element in the list
+  def map(self, map_function): # O(nlogn)
     result = Set(self.get_key)
     for element in self:
       new_element = map_function(element)
       result.add(new_element)
     return result
 
-  def node_search(self, key):
+  # return node that matches key or None if no matches
+  def node_search(self, key): # avg O(logn) worst O(n)
     # Search the BST
     node = self.storage_root
     while node is not None:
@@ -95,10 +106,12 @@ class Set:
         node = node.left
     return node
 
-  def remove(self, key):
+  # remove a node by its key
+  def remove(self, key): # O((logn)^2)
     self.remove_node(self.node_search(key))
 
-  def remove_node(self, node_to_remove):
+  # remove the node and adjust BST as necessary
+  def remove_node(self, node_to_remove): # O(logn)
     if node_to_remove is not None:
       # Case 1: Internal node with 2 children
       if node_to_remove.left is not None and node_to_remove.right is not None:
@@ -131,13 +144,15 @@ class Set:
       else:
         node_to_remove.parent.replace_child(node_to_remove, node_to_remove.right)
 
-  def search(self, key):
+  # return data of the node that matches the key
+  def search(self, key): # avg O(logn) worst O(n)
     # Search the BST
     node = self.node_search(key)
     if node is not None:
       return node.data
     return None
 
+  # combines two sets without duplicates
   def union(self, other_set): # O(n)
     result = Set(self.get_key)
     for element in self:
