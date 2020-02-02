@@ -16,6 +16,7 @@ class Truck():
     self.deliverables = []
     self.MAX_DELIVERABLES = 16
     self.dispatch = dispatch
+    self.iteration = 0
 
   # travels towards the destination or reaches the destination
   def travel(self):
@@ -24,7 +25,7 @@ class Truck():
 
     # if we don't have a destination yet, set one
     if self.dest is None:
-      if len(self.dispatch.packages) == 0: return # Don't worry if there's nothing else for us
+      if len(self.dispatch.package_groups) == 0: return # Don't worry if there's nothing else for us
       if len(self.deliverables) == 0: self.dispatch.dispatch()
       if len(self.deliverables) == 0: return # if we still have nothing after dispatch, there is nothing for us
       self.dest = self.deliverables[0].address
@@ -78,12 +79,20 @@ class Truck():
       self.deliverables.append(deliverable)
     return True
 
+  # load a group of packages onto the truck. Return whether or not the operation was successful
+  def load_group(self, group):
+    all_loaded = True
+    for package in group.packages:
+      result = self.load(package)
+      if not result: all_loaded = False
+    return all_loaded
+
   # deliver any deliverables to the destination
   def deliver(self):
     delivered_packages = []
     for deliverable in self.deliverables:
       if deliverable.address == self.dest:
-        deliverable.status = 'delivered by truck {} @ {} to {}'.format(self.id, self.context.now.strftime("%X"), deliverable.address)
+        deliverable.status = 'delivered by truck {} batch {} @ {} to {}'.format(self.id, self.iteration, self.context.now.strftime("%X"), deliverable.address)
         delivered_packages.append(deliverable)
     return delivered_packages
 

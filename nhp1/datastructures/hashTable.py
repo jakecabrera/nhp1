@@ -54,7 +54,7 @@ class PackageHashTable(HashTable):
     def is_package(elem):
       return isinstance(elem, Deliverable)
 
-    return [filter(is_package, self.table)]
+    return list(filter(is_package, self.table))
 
   # below are the lookup functions for each attribute required
   # This is the main lookup function

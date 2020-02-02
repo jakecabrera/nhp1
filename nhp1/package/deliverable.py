@@ -24,6 +24,12 @@ class Deliverable():
       minute = int(deadline.split(':')[1])
       self.deadline = datetime.now().replace(hour=hour,minute=minute,second=0, microsecond=0)
 
+  # Update the package in case it has any corrections to apply
+  def update(self, time: datetime):
+    if self.complication is not None and self.complication.correction is not None:
+      if self.complication.delay is not None and self.complication.delay < time:
+        self.address = self.complication.correction
+
   # Override the string operator
   def __str__(self):
     msg = 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
