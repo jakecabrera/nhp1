@@ -47,5 +47,15 @@ class BSTIterator:
     self.node = node
 
   # Iterator method to access next element
+  # For Python versions >= 3
   def __next__(self):
     return self.next()
+
+  # For Python versions < 3
+  def next(self):
+    if self.node is None:
+      raise StopIteration
+    else:
+      current = self.node.data
+      self.node = self.node.get_successor()
+      return current

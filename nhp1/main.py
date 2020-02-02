@@ -7,11 +7,13 @@ print('Hello World')
 controller = Controller()
 controller.dispatch = Dispatch(controller)
 d = controller.dispatch
-d.trucks = [Truck(controller, d, 1), Truck(controller, d, 2, status='awaiting assignment')]
-d.dispatch() # O(len(self.trucks)* len(truck.deliverables)^2 * log(len(truck.deliverables))))
+# d.trucks = [Truck(controller, d, 1), Truck(controller, d, 2, status='awaiting assignment')]
+d.trucks = [Truck(controller, d, 1), Truck(controller, d, 2)]
+d.dispatch() # O(trucks * packages^3)
 end_time = datetime.now().replace(hour=17,minute=0,second=0, microsecond=0)
 while controller.now < end_time:
   controller.advance()
 total_miles = sum(x.mileage for x in d.trucks)
 print(total_miles)
 
+# TODO: how did 19 get on truck 2?
