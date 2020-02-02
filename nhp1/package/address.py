@@ -12,7 +12,7 @@ class Address():
     self.parse(address_raw)
 
   # parse the raw address for the necessary fields
-  def parse(self, data):
+  def parse(self, data): # O(1) assuming fields are filled out correctly
     data = data.strip() # get rid of those extra white spaces
     # If this is the Hub, set it uniquely
     if data == 'HUB':

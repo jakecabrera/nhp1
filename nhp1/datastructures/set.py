@@ -138,7 +138,7 @@ class Set:
       return node.data
     return None
 
-  def union(self, other_set):
+  def union(self, other_set): # O(n)
     result = Set(self.get_key)
     for element in self:
       result.add(element)

@@ -14,16 +14,18 @@ class Complication():
     self.correction = None
 
   # Parse the correct complication from a raw string
-  def parse(self, data):
+  def parse(self, data): # O(packages)
     # For getting a truck requirement
     if data.startswith('Can only be on truck '):
       self.truck_req = int(data[len('Can only be on truck '):])
+
     # deliverable requirements
     elif data.startswith('Must be delivered with '):
       deliverables = data[len('Must be delivered with '):].split(',')
       deliverables = list(map(int, deliverables))
-      for id in deliverables:
+      for id in deliverables: # O(packages) in case every package id is listed as required
         self.deliverable_req.add(id)
+
     # For delays
     elif data.startswith('Delayed on flight'):
       delay = data[len('Delayed on flight---will not arrive to depot until '):]
@@ -32,13 +34,14 @@ class Complication():
       delay = delay[:-2]
       minute = int(delay.split(':')[1])
       self.delay = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0)
+
     # for the wrong address listed case
     elif data.startswith('Wrong address listed'):
       self.delay = datetime.now().replace(hour=10, minute=20, second=0, microsecond=0)  # 10:20am
       self.correction = Address('410 S State St (84111)')
 
   # Merge two complications
-  def merge(self, other):
+  def merge(self, other): # O(n)
     # Use the latest delay
     self.delay = self.delay if other.delay < self.delay else other.delay
 
