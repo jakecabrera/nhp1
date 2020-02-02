@@ -5,8 +5,10 @@ class Deliverable():
   def __init__(self):
     self.id = None
     self.address = None
+    self.zip = None
     self.deadline = None
-    self.mass = None
+    self.city = None
+    self.weight = None
     self.status = 'at hub'
     self.complication = None
 
@@ -22,9 +24,14 @@ class Deliverable():
       minute = int(deadline.split(':')[1])
       self.deadline = datetime.now().replace(hour=hour,minute=minute,second=0, microsecond=0)
 
+  # Update the package in case it has any corrections to apply
+  def update(self, time: datetime):
+    if self.complication is not None and self.complication.correction is not None:
+      if self.complication.delay is not None and self.complication.delay < time:
+        self.address = self.complication.correction
+
   # Override the string operator
   def __str__(self):
-    #return 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
     msg = 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
     if self.deadline < datetime.now().replace(hour=16, minute=59, second=59):
       msg += ' deadline: {}'.format(self.deadline)

@@ -24,6 +24,6 @@ class RoutingTable():
       self.routing_matrix.append(distances)
 
   # return the routing matrix record for the address specified
-  def get_routing_record(self, address):
-    i = self.destinations.index(address)
+  def get_routing_record(self, address): # O(n)
+    i = self.destinations.index(address) # O(n)
     return self.routing_matrix[i]
