@@ -10,7 +10,7 @@ class PackageReader():
     self.packages = []
 
   # Load the data from the csv file into the package list
-  def load(self):
+  def load(self): # O(how many packages in csv)
     with open(self.csv, 'r') as file:
       for line in file:
         line = line.replace('\n', '').split(';')

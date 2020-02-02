@@ -14,15 +14,17 @@ class Controller():
     ]
 
   # Advance time by 1 minute
-  def advance(self):
+  def advance(self): # O((trucks^2)*(packages^3))
     self.now = self.now + timedelta(seconds=self.time_delta)
     time_in_seconds = (self.now.replace(microsecond=0) - self.now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-    # Move the trucks forward by 1 minutes worth of distance and do everything a truck would do in that minute (e.g. load packages, deliver, etc.)
-    for truck in self.dispatch.trucks:
-      if truck.status == 'awaiting assignment' and time_in_seconds >= (60*60*9) + (60*5): # truck 2 is awaiting assignment and will leave at 9:05am
+    # Move the trucks forward by 1 minutes worth of distance and do everything a truck would do in that minute (e.g.
+    # load packages, deliver, etc.)
+    for truck in self.dispatch.trucks: # O((trucks^2)*(packages^3))
+      # truck 2 is awaiting assignment and will leave at 9:05am
+      if truck.status == 'awaiting assignment' and time_in_seconds >= (60*60*9) + (60*5):
         truck.status = 'at hub'
-      truck.travel()
+      truck.travel() # O(trucks*packages^3)
 
     # Print out the state of all of the packages at specified times
     if time_in_seconds in self.snapshot_times:

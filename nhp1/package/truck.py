@@ -19,7 +19,7 @@ class Truck():
     self.iteration = 0
 
   # travels towards the destination or reaches the destination
-  def travel(self):
+  def travel(self): # O(trucks*packages^3)
     # Do nothing if we haven't been assigned yet
     if self.status == 'awaiting assignment': return
 
@@ -41,12 +41,12 @@ class Truck():
     if self.dist_from_dest <= 0.0:
       if self.dest == self.dispatch.home:
         self.status = 'at hub'
-        self.dispatch.dispatch()
+        self.dispatch.dispatch() # O(trucks*packages^3)
       else:
         self.status = 'at destination'
-      delivered_packages = self.deliver()
-      for package in delivered_packages:
-        self.deliverables.remove(package)
+      delivered_packages = self.deliver() # O(packages)
+      for package in delivered_packages: # O(packages^2)
+        self.deliverables.remove(package) # O(packages)
 
       # because deliveries are instant, any extra distance traveled over
       # are applied to the next destination
@@ -56,7 +56,7 @@ class Truck():
       current_location = self.dest
       if len(self.deliverables) > 0:
         self.dest = self.deliverables[0].address
-        self.dist_from_dest = self.dispatch.routing_table.distance_between(current_location, self.dest)
+        self.dist_from_dest = self.dispatch.routing_table.distance_between(current_location, self.dest) # O(addresses)
       else:
         # If we are already home (because we delivered everything and there is nothing left to deliver)
         if current_location == self.dispatch.home:
@@ -66,12 +66,12 @@ class Truck():
           return
         # we aren't at home, but lets go there right now
         self.dest = self.dispatch.home
-        self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(self.dest)
+        self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(self.dest) # O(addresses)
       self.dist_from_dest -= overage
 
   # load a deliverable onto the truck
   # returns whether or not the deliverable is loaded on the truck
-  def load(self, deliverable):
+  def load(self, deliverable): # O(1)
     if deliverable not in self.deliverables:
       if len(self.deliverables) == self.MAX_DELIVERABLES:
         return False
@@ -80,7 +80,7 @@ class Truck():
     return True
 
   # load a group of packages onto the truck. Return whether or not the operation was successful
-  def load_group(self, group):
+  def load_group(self, group): # O(len(dispatch.all_packages)) in case all packages are in one group
     all_loaded = True
     for package in group.packages:
       result = self.load(package)
@@ -88,7 +88,7 @@ class Truck():
     return all_loaded
 
   # deliver any deliverables to the destination
-  def deliver(self):
+  def deliver(self): # O(len(self.deliverables))
     delivered_packages = []
     for deliverable in self.deliverables:
       if deliverable.address == self.dest:
