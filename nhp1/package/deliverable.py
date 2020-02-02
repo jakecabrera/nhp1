@@ -5,8 +5,10 @@ class Deliverable():
   def __init__(self):
     self.id = None
     self.address = None
+    self.zip = None
     self.deadline = None
-    self.mass = None
+    self.city = None
+    self.weight = None
     self.status = 'at hub'
     self.complication = None
 
@@ -24,7 +26,6 @@ class Deliverable():
 
   # Override the string operator
   def __str__(self):
-    #return 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
     msg = 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
     if self.deadline < datetime.now().replace(hour=16, minute=59, second=59):
       msg += ' deadline: {}'.format(self.deadline)

@@ -1,4 +1,3 @@
-from nhp1.datastructures.set import Set
 from nhp1.controller import Controller
 
 
