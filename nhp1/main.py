@@ -15,5 +15,3 @@ while controller.now < end_time:
   controller.advance()
 total_miles = sum(x.mileage for x in d.trucks)
 print(total_miles)
-
-# TODO: how did 19 get on truck 2?

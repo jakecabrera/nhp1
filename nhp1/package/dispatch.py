@@ -123,7 +123,8 @@ class Dispatch():
             return []
           if g.complication is None: return required_packages
           if len(g.complication.deliverable_req) == 0: return required_packages
-          for req in g.complication.deliverable_req: # O(n*n) deliverable_req would be at most every other package
+          reqs = list(i for i in g.complication.deliverable_req)
+          for req in reqs: # O(n*n) deliverable_req would be at most every other package
             if req in known: continue # check if we already have this required package
 
             # if not, get the group that does
@@ -131,15 +132,11 @@ class Dispatch():
             known += group_with_required_packages.package_ids # O(1) there should only be one group with the required package
             groups_to_add = get_required_packages(group_with_required_packages, truck, known=known)
 
-            # make sure there are no duplicates
-            if group_with_required_packages in groups_to_add: groups_to_add.remove(group_with_required_packages)
-
             # If we can't find any of the required packages in the hub
             if len(groups_to_add) == 0:
               if req not in known: return []
 
             # If we found everything we needed, put all the packages together and return them
-            else: groups_to_add.append(group_with_required_packages)
             required_packages.extend(groups_to_add)
           return required_packages
 
