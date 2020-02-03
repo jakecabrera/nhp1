@@ -1,4 +1,5 @@
 from datetime import datetime
+from nhp1.package.deliverable import Deliverable
 
 
 # Class to handle the grouping of packages
@@ -38,6 +39,13 @@ class PackageGroup():
   def __len__(self):  # O(1)
     return len(self.packages)
 
+  # Override in operator
+  def __contains__(self, item: Deliverable):  # O(packages)
+    if not isinstance(item, Deliverable):
+      if not isinstance(item, int): return False
+      return item in self.package_ids
+    return item.id in self.package_ids
+
   # Add a package to this group
   def append(self, package):  # O(1)
     self.packages.append(package)
@@ -59,3 +67,12 @@ class PackageGroup():
     self.package_ids = []
     self.complications = []
     self.combined_complication = None
+
+  # check if the group is complicated to the point that it cannot be loaded on this truck
+  def is_complicated(self, truck, context):
+    if self.complication is not None:
+      if self.complication.truck_req is not None and self.complication.truck_req != truck.id:
+        return True
+      if self.complication.delay is not None and self.complication.delay > context.now:
+        return True
+    return False

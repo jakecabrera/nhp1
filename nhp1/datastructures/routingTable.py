@@ -1,3 +1,5 @@
+from nhp1.datastructures.set import Set
+
 # Data structure to hold all the locations and the distances between them
 class RoutingTable():
   # Constructor for RoutingTable class
@@ -16,7 +18,23 @@ class RoutingTable():
     return self.distance_matrix[self.destinations.index(a)][0]
 
   # Created a routing table which is each address with a list of addresses sorted by distance
-  def build_routing_matrix(self): # O((addresses^2)*log(addresses))
+  def build_routing_matrix(self, useable_addresses): # O((addresses^2)*log(addresses))
+    # narrow down which indexes we are concerned about
+    self.destinations = [self.destinations[0]] + useable_addresses # Because we also want the hub
+    useable_addresses = self.destinations
+    useable_indexes = []
+    for i in range(len(self.destinations)):
+      if self.destinations[i] in useable_addresses:
+        useable_indexes.append(i)
+
+    # cut out entire record for addresses we don't care about
+    self.distance_matrix = [r[1] for r in list(filter(lambda r: r[0] in useable_indexes, enumerate(self.distance_matrix)))]
+
+    # trim each record to only contain destinations we care about
+    for i in range(len(self.distance_matrix)):
+      record = self.distance_matrix[i]
+      self.distance_matrix[i] = [d[1] for d in list(filter(lambda d: d[0] in useable_indexes, enumerate(record)))]
+
     for i, distances in enumerate(self.distance_matrix): # O((addresses^2)*log(addresses))
       # Pair the distance with the address associated for this record
       distances = [(self.destinations[i], d) for i, d in enumerate(distances)]

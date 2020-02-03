@@ -1,5 +1,5 @@
 from nhp1.controller import Controller
-
+from nhp1.datastructures.set import Set
 
 class Truck():
   # Constructor for the Truck class
@@ -10,13 +10,14 @@ class Truck():
     self.SPEED = 18.0
     self.status = status
     self.dest = None
-    self.route = []
     self.dist_from_dest = float('inf')
     self.gas = float('inf')
     self.deliverables = []
     self.MAX_DELIVERABLES = 16
     self.dispatch = dispatch
     self.iteration = 0
+    self.zips = Set()
+    self.cities = Set()
 
   # travels towards the destination or reaches the destination
   def travel(self): # O(trucks*packages^3)
@@ -53,7 +54,7 @@ class Truck():
       overage = self.dist_from_dest * -1
 
       # set the new destination
-      current_location = self.dest
+      current_location = self.dest # if we still have packages to deliver, set dest to next address
       if len(self.deliverables) > 0:
         self.dest = self.deliverables[0].address
         self.dist_from_dest = self.dispatch.routing_table.distance_between(current_location, self.dest) # O(addresses)
@@ -66,7 +67,7 @@ class Truck():
           return
         # we aren't at home, but lets go there right now
         self.dest = self.dispatch.home
-        self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(self.dest) # O(addresses)
+        self.dist_from_dest = self.dispatch.routing_table.distance_to_hub(current_location) # O(addresses)
       self.dist_from_dest -= overage
 
   # load a deliverable onto the truck
@@ -76,11 +77,13 @@ class Truck():
       if len(self.deliverables) == self.MAX_DELIVERABLES:
         return False
       deliverable.status = 'in route'
+      self.zips.add(deliverable.zip)
+      self.cities.add(deliverable.city)
       self.deliverables.append(deliverable)
     return True
 
   # load a group of packages onto the truck. Return whether or not the operation was successful
-  def load_group(self, group): # O(len(dispatch.all_packages)) in case all packages are in one group
+  def load_group(self, group): # O(packages) in case all packages are in one group
     all_loaded = True
     for package in group.packages:
       result = self.load(package)

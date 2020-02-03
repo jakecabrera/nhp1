@@ -6,6 +6,7 @@ from nhp1.package.truck import Truck
 from nhp1.package.address import Address
 from nhp1.datastructures.hashTable import PackageHashTable
 from nhp1.package.packageGroup import PackageGroup
+from nhp1.datastructures.set import Set
 
 
 # Class to control which trucks get what packages and what routes to take
@@ -20,21 +21,28 @@ class Dispatch():
     d = DistanceReader('resources/WGUPS Distance Table.csv')
     d.load()
     self.routing_table = RoutingTable(d.addresses, d.distance_matrix)
-    self.routing_table.build_routing_matrix()
 
     # Build the packages list and the list of addresses we will visit
     p = PackageReader('resources/WGUPS Package File.csv')
     p.load()
+    self.addresses = []
     self.all_packages = PackageHashTable(initial_capacity=len(p.packages))
     for package in p.packages:  # O(len(self.all_packages))
       self.all_packages.insert(package) # O(1)
+      if package.address not in self.addresses:
+        self.addresses.append(package.address)
+
+    # Build the routing matrix
+    self.routing_table.build_routing_matrix(self.addresses)
 
     # Build the groups of packages
     self.package_groups = []
     self.update_package_groups()  # O(len(self.all_packages)^2)
 
   # Create groups of packages that still need to go out based on their address
-  def update_package_groups(self): # O(len(self.all_packages)^2)
+  def update_package_groups(self): # O(packages^2)
+    self.package_groups = [] # clear the list
+
     # List of all packages at the hub
     packages = self.all_packages.lookup_status('at hub') # O(len(self.all_packages))
 
@@ -75,9 +83,9 @@ class Dispatch():
 
   # Sort package groups first by if they have any complications, then by their deadline, then by if they have any
   # dependent packages to be delivered with, then by distance to the hub
-  def sort_package_groups(self): # O(len(self.packages) * log(len(self.packages)))
+  def sort_package_groups(self): # O(packages * log(packages) * addresses)
     # a function used to sort the elements in the package_groups list
-    def compare(group: PackageGroup): # O(1)
+    def compare(group: PackageGroup): # O(addresses)
       complication = 0
       deliverable_req = 1
 
@@ -97,13 +105,13 @@ class Dispatch():
         if len(group.complication.deliverable_req) > 0:
           deliverable_req = 0
 
-      return complication, group.deadline, deliverable_req, group.address.zip, self.routing_table.distance_to_hub(
+      return complication, deliverable_req, group.deadline, group.address.zip, self.routing_table.distance_to_hub(
         group.address)
 
-    self.package_groups.sort(key=compare) # O(nlogn)
+    self.package_groups.sort(key=compare) # O(nlogn*addresses)
 
   # Currently working on getting packages for the same place to go together
-  def load_trucks(self): # O(len(self.trucks)*len(self.all_packages)^3)
+  def load_trucks(self): # O(trucks * packages^3)
     trucks_at_hub = list(filter(lambda t: t.status == 'at hub', self.trucks))
     self.update_package_groups() # O(len(self.all_packages)^2)
     self.sort_package_groups() # O(len(self.all_packages) * log(len(self.all_packages)))
@@ -114,49 +122,18 @@ class Dispatch():
       while len(truck.deliverables) < truck.MAX_DELIVERABLES and i < len(self.package_groups): # O(len(self.package_groups)^3)
         group = self.package_groups[i]
 
-        # Recursive function to get a list of all required packages
-        def get_required_packages(g: PackageGroup, truck: Truck, known=[]):  # O(len(self.package_groups)^2)
-          required_packages = [g]
-          known += [d.id for d in truck.deliverables]
-          known += g.package_ids
-          if g not in self.package_groups:
-            return []
-          if g.complication is None: return required_packages
-          if len(g.complication.deliverable_req) == 0: return required_packages
-          reqs = list(i for i in g.complication.deliverable_req)
-          for req in reqs: # O(n*n) deliverable_req would be at most every other package
-            if req in known: continue # check if we already have this required package
-
-            # if not, get the group that does
-            group_with_required_packages = list(filter(lambda x: req in x.package_ids, self.package_groups))[0] # O(n)
-            known += group_with_required_packages.package_ids # O(1) there should only be one group with the required package
-            groups_to_add = get_required_packages(group_with_required_packages, truck, known=known)
-
-            # If we can't find any of the required packages in the hub
-            if len(groups_to_add) == 0:
-              if req not in known: return []
-
-            # If we found everything we needed, put all the packages together and return them
-            required_packages.extend(groups_to_add)
-          return required_packages
-
-        required_packages = get_required_packages(group, truck) # O(len(self.package_groups)^2)
+        required_packages = self.get_required_packages(group) # O(packages^2)
         if len(required_packages) + len(truck.deliverables) <= truck.MAX_DELIVERABLES:
           complicated = False
-          for group in required_packages: # O(len(self.package_groups))
-            # check if the package has some sort of complication that prevents it from getting loaded
-            if group.complication is not None:
-              if group.complication.truck_req is not None and group.complication.truck_req != truck.id:
-                complicated = True
-              if group.complication.delay is not None and self.context.now < group.complication.delay:
-                complicated = True
+          for group in required_packages: # O(packages)
+            if group.is_complicated(truck, self.context): complicated = True
           if complicated:
             i += 1
             continue
           else:
             i = 0
 
-          for group in required_packages: # O(len(self.package_groups))
+          for group in required_packages: # O(packages)
             print('loading {} packages on truck {}'.format(len(group), truck.id))
             result = truck.load_group(group)
             if result == True:
@@ -199,7 +176,39 @@ class Dispatch():
     truck.deliverables = packages_by_distance_between
 
   # Function to load and plan a route for a truck
-  def dispatch(self):  # O(len(self.trucks)*len(self.all_packages)^3) because truck.deliverables is always <= self.all_packages
+  def dispatch(self):  # O(trucks*packages^3) because truck.deliverables is always <= self.all_packages
     self.load_trucks()  # O(len(self.trucks)*len(self.all_packages)^3)
     for truck in self.trucks:  # O(len(self.trucks)* len(truck.deliverables)^2 * log(len(truck.deliverables))))
       if truck.status == 'at hub': self.build_route(truck)  # O(n^2logn)
+
+  # Retrieve all package groups that have the required packages
+  # worst case is each package requires every other package and every package
+  # was in its own group which would make this complexity O(packages^2)
+  def get_required_packages(self, group: PackageGroup, known=Set()):
+    groups_with_required_packages = [group]
+    known.add_all(group.package_ids)
+
+    # If this group has a delivery requirement, get all the required package groups
+    if group.complication is not None and len(group.complication.deliverable_req) > 0:
+
+      # Get the required packages for each individual requirement
+      for required_package_id in group.complication.deliverable_req:
+
+        # if we already have it, don't worry about it
+        if required_package_id in known: continue
+
+        # find the group that contains the package you are looking for
+        for potential_group in self.package_groups:
+          if required_package_id in potential_group:
+
+            # Also get that package groups required packages
+            groups_with_required_packages += self.get_required_packages(potential_group, known=known)
+
+      # add all the new package ids we got to the known list and return what we found
+      for group in groups_with_required_packages:
+        known.add_all(group.package_ids)
+      return groups_with_required_packages
+
+    # This package has no delivery requirements, return itself
+    else:
+      return groups_with_required_packages

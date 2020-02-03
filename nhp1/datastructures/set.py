@@ -51,6 +51,11 @@ class Set:
             newNode.parent = node
             return True
 
+  # add all elements of an iterable to the set
+  def add_all(self, elements):
+    for element in elements:
+      self.add(element)
+
   # Remove any elements in other_set from self
   def difference(self, other_set): # O(n)
     result = Set(self.get_key)
@@ -151,6 +156,10 @@ class Set:
     if node is not None:
       return node.data
     return None
+
+  # Override in operator
+  def __contains__(self, item):
+    return self.search(item) is not None
 
   # combines two sets without duplicates
   def union(self, other_set): # O(n)

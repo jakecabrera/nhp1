@@ -42,7 +42,7 @@ class HashTable:
   def __next__(self):
     if self.n < len(self.table):
       self.n += 1
-      return self.table[self.n-1]
+      return self.table[self.n - 1]
     else:
       raise StopIteration
 
