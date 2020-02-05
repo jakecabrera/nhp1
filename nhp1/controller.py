@@ -1,3 +1,7 @@
+# First name: Jake
+# Last name: Cabrera
+# Student ID: 000993409
+
 from datetime import datetime, timedelta
 
 # class to be used to control the setting (i.e. time of day)
@@ -7,11 +11,7 @@ class Controller():
     self.now = datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
     self.time_delta = 60.0 # one minute
     self.dispatch = None
-    self.snapshot_times = [
-      60*60*9, # 9:00am
-      60*60*10, # 10:00am
-      60*60*13 # 1:00pm
-    ]
+    self.snapshot_times = []
 
   # Advance time by 1 minute
   def advance(self): # O((trucks^2)*(packages^3))
@@ -28,7 +28,15 @@ class Controller():
 
     # Print out the state of all of the packages at specified times
     if time_in_seconds in self.snapshot_times:
-      print('Snapshot at {} seconds'.format(time_in_seconds))
+      print('\n\n\n\n\n')
+      print('Snapshot at {}'.format(self.now.strftime("%X")))
       for package in self.dispatch.all_packages: # O(packages)
         print(package)
 
+  # make the controller print the statuses of all the packages at the given time
+  # should be between 8:00am to 5:00pm because that is how long the day is simulated for
+  # otherwise you probably won't see your statuses printed
+  def show_package_statuses_at_time(self, time: datetime):
+    midnight = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    time_today_in_seconds = (time.replace(microsecond=0) - midnight).total_seconds()
+    self.snapshot_times.append(time_today_in_seconds)

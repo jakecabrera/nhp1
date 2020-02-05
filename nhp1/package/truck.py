@@ -99,6 +99,41 @@ class Truck():
         delivered_packages.append(deliverable)
     return delivered_packages
 
+  # Sort packages on the truck based on distance to eachother.
+  # First package is the package closest to the hub
+  # next package is the package closest to the next lcoation
+  # and so on
+  def sort_packages(self): # O(n^2 * logn)
+    # first sort by distance to the hub
+    ordered_packages_by_distance = list(sorted(self.deliverables, key=lambda x: self.dispatch.routing_table.distance_to_hub(x.address)))
+
+    # Now we are guaranteed the closest package is first
+    packages_by_distance_between = []
+
+    while len(ordered_packages_by_distance) > 1:  # O(n^2logn)
+      # get the closest package to the current one
+      record = self.dispatch.routing_table.get_routing_record(ordered_packages_by_distance[0].address)  # O(n)
+      record = [address for address, dist in record]  # O(n)
+      indexes_by_distance_to_package = [(record.index(p.address), p) for p in ordered_packages_by_distance[1:]]  # O(n)
+      indexes_by_distance_to_package.sort(key=lambda x: x[0])  # O(nlogn)
+      closest_index_package_pair = indexes_by_distance_to_package[0]
+      closest_package = closest_index_package_pair[1]
+
+      # Add the current package to the ordered list of packages
+      packages_by_distance_between.append(ordered_packages_by_distance[0])
+
+      # replace the first package in the list with the closest package
+      ordered_packages_by_distance.remove(closest_package)
+      ordered_packages_by_distance = ordered_packages_by_distance[1:]
+      ordered_packages_by_distance.insert(0, closest_package)
+
+    # Add the last package to be sorted to the list
+    if len(ordered_packages_by_distance) >= 1:
+      packages_by_distance_between.append(ordered_packages_by_distance[0])
+
+    # Now the packages are ordered by distance between each other
+    self.deliverables = packages_by_distance_between
+
   # Override the hash function for use in the hash table
   def __hash__(self):
     return self.id

@@ -117,7 +117,6 @@ class Dispatch():
     self.sort_package_groups() # O(len(self.all_packages) * log(len(self.all_packages)))
     for truck in trucks_at_hub: # O(len(self.trucks)*len(self.all_packages)^3) in case each package is its own group and all trucks are at hub
       truck.iteration += 1
-      print('loading truck {} for batch {} at {}'.format(truck.id, truck.iteration, self.context.now))
       i = 0
       while len(truck.deliverables) < truck.MAX_DELIVERABLES and i < len(self.package_groups): # O(len(self.package_groups)^3)
         group = self.package_groups[i]
@@ -134,52 +133,17 @@ class Dispatch():
             i = 0
 
           for group in required_packages: # O(packages)
-            print('loading {} packages on truck {}'.format(len(group), truck.id))
             result = truck.load_group(group)
             if result == True:
               self.package_groups.remove(group)
         else: i += 1
 
-  # Build the routes for a truck
-  def build_route(self, truck: Truck):  # O(n^2logn)
-    # Don't do anything if there are no packages
-    if len(truck.deliverables) == 0: return
-
-    # Get the first place closest to the hub
-    ordered_packages_by_distance = list(truck.deliverables)
-    ordered_packages_by_distance.sort(key=lambda x: self.routing_table.distance_to_hub(x.address))
-
-    # Now we are guaranteed the closest package is first
-    packages_by_distance_between = []
-
-    while len(ordered_packages_by_distance) > 1:  # O(n^2logn)
-      # get the closest package to the current one
-      record = self.routing_table.get_routing_record(ordered_packages_by_distance[0].address)  # O(n)
-      record = [address for address, dist in record]  # O(n)
-      indexes_by_distance_to_package = [(record.index(p.address), p) for p in ordered_packages_by_distance[1:]]  # O(n)
-      indexes_by_distance_to_package.sort(key=lambda x: x[0])  # O(nlogn)
-      closest_index_package_pair = indexes_by_distance_to_package[0]
-      closest_package = closest_index_package_pair[1]
-
-      # Add the current package to the ordered list of packages
-      packages_by_distance_between.append(ordered_packages_by_distance[0])
-
-      # replace the first package in the list with the closest package
-      ordered_packages_by_distance.remove(closest_package)
-      ordered_packages_by_distance = ordered_packages_by_distance[1:]
-      ordered_packages_by_distance.insert(0, closest_package)
-    # Add the last package to be sorted to the list
-    len(ordered_packages_by_distance)
-    packages_by_distance_between.append(ordered_packages_by_distance[0])
-
-    # Now the packages are ordered by distance between each other
-    truck.deliverables = packages_by_distance_between
-
   # Function to load and plan a route for a truck
   def dispatch(self):  # O(trucks*packages^3) because truck.deliverables is always <= self.all_packages
     self.load_trucks()  # O(len(self.trucks)*len(self.all_packages)^3)
     for truck in self.trucks:  # O(len(self.trucks)* len(truck.deliverables)^2 * log(len(truck.deliverables))))
-      if truck.status == 'at hub': self.build_route(truck)  # O(n^2logn)
+      if truck.status == 'at hub':
+        truck.sort_packages() # O(n^2logn)
 
   # Retrieve all package groups that have the required packages
   # worst case is each package requires every other package and every package
@@ -212,3 +176,8 @@ class Dispatch():
     # This package has no delivery requirements, return itself
     else:
       return groups_with_required_packages
+
+  # Interface to see status of all packages
+  def get_package_statuses(self): # O(packages)
+    for package in self.all_packages: # O(packages)
+      print(package)
