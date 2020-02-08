@@ -95,7 +95,7 @@ class Truck():
     delivered_packages = []
     for deliverable in self.deliverables:
       if deliverable.address == self.dest:
-        deliverable.status = 'delivered by truck {} batch {} @ {} to {}'.format(self.id, self.iteration, self.context.now.strftime("%X"), deliverable.address)
+        deliverable.status = 'delivered by truck {} batch {} @ {}'.format(self.id, self.iteration, self.context.now.strftime("%X"))
         delivered_packages.append(deliverable)
     return delivered_packages
 

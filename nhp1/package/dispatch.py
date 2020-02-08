@@ -99,7 +99,9 @@ class Dispatch():
 
             # For the case of the address in need of correction, correct it at the appropriate time
           elif group.complication.correction is not None:
+            # Groups with complications contain only one package
             group.address = group.complication.correction
+            group.packages[0].address = group.address
 
         # check if any of the packages need to be with any other packages
         if len(group.complication.deliverable_req) > 0:

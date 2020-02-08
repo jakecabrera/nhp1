@@ -33,9 +33,7 @@ class Deliverable():
 
   # Override the string operator
   def __str__(self):
-    msg = 'Package: {}; status: {}; complication: {}'.format(self.id, self.status, self.complication is not None)
-    if self.deadline < datetime.now().replace(hour=16, minute=59, second=59):
-      msg += ' deadline: {}'.format(self.deadline)
+    msg = 'Package ID: {}; status: {}; address: {}; city: {}; zip: {}; weight: {}; deadline: {};'.format(self.id, self.status, self.address.address, self.city, self.zip, self.weight, self.deadline)
     return msg
 
   # Override equal operator
